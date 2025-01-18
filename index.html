@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة غين</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4); /* التدرج اللوني */
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.9); /* خلفية شبه شفافة */
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 600px;
+            animation: fadeIn 1s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #ff6f61;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        p {
+            font-size: 1.2em;
+            margin-bottom: 25px;
+            color: #666;
+        }
+        input[type="text"], select, textarea {
+            padding: 12px;
+            width: 100%;
+            border: 2px solid #ff6f61;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            background-color: #fff;
+            color: #333;
+            outline: none;
+            transition: 0.3s;
+        }
+        input[type="text"]:focus, select:focus, textarea:focus {
+            border-color: #ff3b2f;
+        }
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            background-color: #ff6f61;
+            color: #fff;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #ff3b2f;
+        }
+        iframe {
+            width: 100%;
+            height: 350px;
+            border: none;
+            margin-top: 25px;
+            border-radius: 8px;
+        }
+        .footer {
+            margin-top: 25px;
+            color: #888;
+            font-size: 0.9em;
+        }
+        .footer a {
+            color: #ff6f61;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        #loadingMessage {
+            display: none;
+            color: #ff6f61;
+            margin-top: 10px;
+        }
+        #commentsSection {
+            margin-top: 20px;
+        }
+        #commentsList {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+        #commentsList li {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            color: #333;
+        }
+        #videoStats {
+            margin-top: 20px;
+            color: #666;
+        }
+        #socialSharing {
+            margin-top: 20px;
+        }
+        #socialSharing button {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>منصة غين</h1>
+        <p>أدخل كود الفيديو لعرض المحاضرة:</p>
+        <input type="text" id="videoCode" placeholder="أدخل الكود هنا">
+        <button onclick="playVideo()">تشغيل المحاضرة</button>
+        <button onclick="downloadVideo()">تنزيل الفيديو</button>
+        <div id="loadingMessage">جارٍ التحميل...</div>
+        <div id="videoContainer" style="display:none; margin-top: 25px;">
+            <iframe id="videoFrame" allow="autoplay; fullscreen"></iframe>
+        </div>
+        <div id="videoStats">
+            <p>عدد المشاهدات: <span id="viewsCount">0</span></p>
+            <p>عدد التعليقات: <span id="commentsCount">0</span></p>
+        </div>
+        <div id="commentsSection">
+            <textarea id="comment" placeholder="أضف تعليقًا..."></textarea>
+            <button onclick="addComment()">إرسال</button>
+            <ul id="commentsList"></ul>
+        </div>
+        <div id="socialSharing">
+            <button onclick="shareOnTwitter()">Twitter</button>
+            <button onclick="shareOnFacebook()">Facebook</button>
+            <button onclick="shareOnLinkedIn()">LinkedIn</button>
+        </div>
+        <div class="footer">
+            <p>بوت غين: <a href="https://t.me/ShamsVI1Bot" target="_blank">اضغط هنا</a></p>
+            <p><a href="about.html">حول المنصة</a></p>
+        </div>
+    </div>
+
+    <script>
+        const comments = [];
+        let viewsCount = 0;
+
+        function playVideo() {
+            const videoCode = document.getElementById('videoCode').value.trim();
+            if (!videoCode || !/^[a-zA-Z0-9]+$/.test(videoCode)) {
+                alert("الكود المدخل غير صحيح. يرجى إدخال كود صالح.");
+                return;
+            }
+            document.getElementById('loadingMessage').style.display = "block";
+            setTimeout(() => {
+                try {
+                    const decodedCode = atob(videoCode);
+                    const videoUrl = `https://iframe.mediadelivery.net/embed/215061/${decodedCode}?autoplay=true&loop=false&muted=false&preload=true&responsive=true`;
+                    document.getElementById('videoFrame').src = videoUrl;
+                    document.getElementById('videoContainer').style.display = "block";
+                    viewsCount++;
+                    document.getElementById('viewsCount').textContent = viewsCount;
+                } catch (e) {
+                    console.error("Error decoding Base64:", e);
+                    alert("الكود المدخل غير صحيح.");
+                } finally {
+                    document.getElementById('loadingMessage').style.display = "none";
+                }
+            }, 1000); // محاكاة وقت التحميل
+        }
+
+        function downloadVideo() {
+            const videoUrl = document.getElementById('videoFrame').src;
+            if (videoUrl) {
+                const link = document.createElement('a');
+                link.href = videoUrl;
+                link.download = 'video.mp4';
+                link.click();
+            } else {
+                alert("لا يوجد فيديو لعرضه.");
+            }
+        }
+
+        function addComment() {
+            const commentText = document.getElementById('comment').value.trim();
+            if (commentText) {
+                comments.push(commentText);
+                document.getElementById('commentsList').innerHTML = comments.map(comment => `<li>${comment}</li>`).join('');
+                document.getElementById('commentsCount').textContent = comments.length;
+                document.getElementById('comment').value = ''; // مسح حقل التعليق
+            } else {
+                alert("يرجى إدخال تعليق.");
+            }
+        }
+
+        function shareOnTwitter() {
+            const videoUrl = document.getElementById('videoFrame').src;
+            if (videoUrl) {
+                const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(videoUrl)}`;
+                window.open(twitterUrl, '_blank');
+            } else {
+                alert("لا يوجد فيديو لعرضه.");
+            }
+        }
+
+        function shareOnFacebook() {
+            const videoUrl = document.getElementById('videoFrame').src;
+            if (videoUrl) {
+                const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(videoUrl)}`;
+                window.open(facebookUrl, '_blank');
+            } else {
+                alert("لا يوجد فيديو لعرضه.");
+            }
+        }
+
+        function shareOnLinkedIn() {
+            const videoUrl = document.getElementById('videoFrame').src;
+            if (videoUrl) {
+                const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(videoUrl)}`;
+                window.open(linkedInUrl, '_blank');
+            } else {
+                alert("لا يوجد فيديو لعرضه.");
+            }
+        }
+    </script>
+</body>
+</html>
