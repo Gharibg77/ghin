@@ -17,7 +17,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            height: 200vh; /* زيادة ارتفاع الصفحة لاختبار التمرير */
             overflow: hidden;
         }
         .container {
@@ -29,6 +29,7 @@
             width: 90%;
             max-width: 600px;
             animation: fadeIn 1s ease;
+            margin-top: 50px; /* إضافة هامش أعلى لاختبار التمرير */
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.9); }
@@ -236,6 +237,32 @@
                 alert("لا يوجد فيديو لعرضه.");
             }
         }
+
+        // تحسين تجربة التمرير باستخدام JavaScript
+        document.addEventListener('wheel', (event) => {
+            event.preventDefault(); // منع التمرير الافتراضي
+            window.scrollBy({
+                top: event.deltaY * 0.5, // تقليل سرعة التمرير
+                behavior: 'smooth' // جعل التمرير سلسًا
+            });
+        });
+
+        // دعم اللمس للأجهزة المحمولة
+        let touchStartY = 0;
+        document.addEventListener('touchstart', (event) => {
+            touchStartY = event.touches[0].clientY;
+        });
+
+        document.addEventListener('touchmove', (event) => {
+            event.preventDefault(); // منع التمرير الافتراضي
+            const touchEndY = event.touches[0].clientY;
+            const deltaY = touchStartY - touchEndY;
+            window.scrollBy({
+                top: deltaY * 0.5, // تقليل سرعة التمرير
+                behavior: 'smooth' // جعل التمرير سلسًا
+            });
+            touchStartY = touchEndY;
+        });
     </script>
 </body>
 </html>
