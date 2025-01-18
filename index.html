@@ -18,7 +18,7 @@
             justify-content: center;
             align-items: center;
             height: 200vh; /* زيادة ارتفاع الصفحة لاختبار التمرير */
-            overflow: hidden;
+            overflow: auto; /* تمكين التمرير الافتراضي */
         }
         .container {
             background: rgba(255, 255, 255, 0.9); /* خلفية شبه شفافة */
@@ -78,11 +78,11 @@
             width: 100%;
             height: 350px;
             border: none;
-            margin-top: 25px;
-            border-radius: 8px;
+            margin-top: 20px;
+            border-radius: 5px;
         }
         .footer {
-            margin-top: 25px;
+            margin-top: 20px;
             color: #888;
             font-size: 0.9em;
         }
@@ -98,31 +98,6 @@
             color: #ff6f61;
             margin-top: 10px;
         }
-        #commentsSection {
-            margin-top: 20px;
-        }
-        #commentsList {
-            list-style: none;
-            padding: 0;
-            margin-top: 10px;
-        }
-        #commentsList li {
-            background: rgba(255, 255, 255, 0.8);
-            padding: 10px;
-            margin-bottom: 5px;
-            border-radius: 5px;
-            color: #333;
-        }
-        #videoStats {
-            margin-top: 20px;
-            color: #666;
-        }
-        #socialSharing {
-            margin-top: 20px;
-        }
-        #socialSharing button {
-            margin: 5px;
-        }
     </style>
 </head>
 <body>
@@ -131,24 +106,12 @@
         <p>أدخل كود الفيديو لعرض المحاضرة:</p>
         <input type="text" id="videoCode" placeholder="أدخل الكود هنا">
         <button onclick="playVideo()">تشغيل المحاضرة</button>
-        <button onclick="downloadVideo()">تنزيل الفيديو</button>
+        <p>أو أدخل رابط فيديو من YouTube:</p>
+        <input type="text" id="youtubeUrl" placeholder="أدخل رابط YouTube هنا">
+        <button onclick="playYouTubeVideo()">تشغيل فيديو YouTube</button>
         <div id="loadingMessage">جارٍ التحميل...</div>
-        <div id="videoContainer" style="display:none; margin-top: 25px;">
+        <div id="videoContainer" style="display:none; margin-top: 20px;">
             <iframe id="videoFrame" allow="autoplay; fullscreen"></iframe>
-        </div>
-        <div id="videoStats">
-            <p>عدد المشاهدات: <span id="viewsCount">0</span></p>
-            <p>عدد التعليقات: <span id="commentsCount">0</span></p>
-        </div>
-        <div id="commentsSection">
-            <textarea id="comment" placeholder="أضف تعليقًا..."></textarea>
-            <button onclick="addComment()">إرسال</button>
-            <ul id="commentsList"></ul>
-        </div>
-        <div id="socialSharing">
-            <button onclick="shareOnTwitter()">Twitter</button>
-            <button onclick="shareOnFacebook()">Facebook</button>
-            <button onclick="shareOnLinkedIn()">LinkedIn</button>
         </div>
         <div class="footer">
             <p>بوت غين: <a href="https://t.me/ShamsVI1Bot" target="_blank">اضغط هنا</a></p>
@@ -157,112 +120,62 @@
     </div>
 
     <script>
-        const comments = [];
-        let viewsCount = 0;
-
         function playVideo() {
             const videoCode = document.getElementById('videoCode').value.trim();
-            if (!videoCode || !/^[a-zA-Z0-9]+$/.test(videoCode)) {
-                alert("الكود المدخل غير صحيح. يرجى إدخال كود صالح.");
-                return;
-            }
-            document.getElementById('loadingMessage').style.display = "block";
-            setTimeout(() => {
+            if (videoCode) {
                 try {
+                    // فك تشفير Base64
                     const decodedCode = atob(videoCode);
                     const videoUrl = `https://iframe.mediadelivery.net/embed/215061/${decodedCode}?autoplay=true&loop=false&muted=false&preload=true&responsive=true`;
+                    
+                    // تحديث iframe بالرابط وتفعيل العرض
                     document.getElementById('videoFrame').src = videoUrl;
                     document.getElementById('videoContainer').style.display = "block";
-                    viewsCount++;
-                    document.getElementById('viewsCount').textContent = viewsCount;
                 } catch (e) {
                     console.error("Error decoding Base64:", e);
                     alert("الكود المدخل غير صحيح.");
-                } finally {
-                    document.getElementById('loadingMessage').style.display = "none";
                 }
-            }, 1000); // محاكاة وقت التحميل
+            }
+        }
+
+        function playYouTubeVideo() {
+            const youtubeUrl = document.getElementById('youtubeUrl').value.trim();
+            if (youtubeUrl) {
+                try {
+                    // استخراج معرف الفيديو من رابط YouTube
+                    const videoId = extractYouTubeVideoId(youtubeUrl);
+                    if (videoId) {
+                        const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                        document.getElementById('videoFrame').src = embedUrl;
+                        document.getElementById('videoContainer').style.display = "block";
+                    } else {
+                        alert("رابط YouTube غير صحيح.");
+                    }
+                } catch (e) {
+                    console.error("Error processing YouTube URL:", e);
+                    alert("رابط YouTube غير صحيح.");
+                }
+            }
+        }
+
+        function extractYouTubeVideoId(url) {
+            // استخراج معرف الفيديو من رابط YouTube
+            const regex = /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+            const match = url.match(regex);
+            return match ? match[1] : null;
         }
 
         function downloadVideo() {
             const videoUrl = document.getElementById('videoFrame').src;
             if (videoUrl) {
-                const link = document.createElement('a');
-                link.href = videoUrl;
-                link.download = 'video.mp4';
-                link.click();
+                alert(`رابط الفيديو: ${videoUrl}\nيمكنك نسخ الرابط وفتحه في نافذة جديدة لتنزيله.`);
             } else {
                 alert("لا يوجد فيديو لعرضه.");
             }
         }
 
-        function addComment() {
-            const commentText = document.getElementById('comment').value.trim();
-            if (commentText) {
-                comments.push(commentText);
-                document.getElementById('commentsList').innerHTML = comments.map(comment => `<li>${comment}</li>`).join('');
-                document.getElementById('commentsCount').textContent = comments.length;
-                document.getElementById('comment').value = ''; // مسح حقل التعليق
-            } else {
-                alert("يرجى إدخال تعليق.");
-            }
-        }
-
-        function shareOnTwitter() {
-            const videoUrl = document.getElementById('videoFrame').src;
-            if (videoUrl) {
-                const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(videoUrl)}`;
-                window.open(twitterUrl, '_blank');
-            } else {
-                alert("لا يوجد فيديو لعرضه.");
-            }
-        }
-
-        function shareOnFacebook() {
-            const videoUrl = document.getElementById('videoFrame').src;
-            if (videoUrl) {
-                const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(videoUrl)}`;
-                window.open(facebookUrl, '_blank');
-            } else {
-                alert("لا يوجد فيديو لعرضه.");
-            }
-        }
-
-        function shareOnLinkedIn() {
-            const videoUrl = document.getElementById('videoFrame').src;
-            if (videoUrl) {
-                const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(videoUrl)}`;
-                window.open(linkedInUrl, '_blank');
-            } else {
-                alert("لا يوجد فيديو لعرضه.");
-            }
-        }
-
-        // دعم اللمس للأجهزة المحمولة
-        let touchStartY = 0;
-        let isScrolling = false;
-
-        document.addEventListener('touchstart', (event) => {
-            touchStartY = event.touches[0].clientY;
-            isScrolling = true;
-        });
-
-        document.addEventListener('touchmove', (event) => {
-            if (!isScrolling) return;
-
-            const touchEndY = event.touches[0].clientY;
-            const deltaY = touchStartY - touchEndY;
-
-            // تحريك الصفحة مع حركة الإصبع
-            window.scrollBy(0, deltaY);
-
-            // تحديث نقطة البداية للحركة التالية
-            touchStartY = touchEndY;
-        });
-
-        document.addEventListener('touchend', () => {
-            isScrolling = false;
-        });
+        // تمكين التمرير الافتراضي
+        document.body.style.overflow = 'auto';
     </script>
 </body>
 </html>
